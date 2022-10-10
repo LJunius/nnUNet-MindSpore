@@ -28,6 +28,9 @@ from src.nnunet.run.load_pretrained_weights import load_pretrained_weights
 from src.nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
 from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 
+os.environ['DEVICE_ID'] = '3'
+# os.environ['RANK_SIZE'] = '1'
+os.environ['DISTRIBUTE'] = '0'
 def do_train(parser):
     """train logic according to parser args"""
     args = parser.parse_args()
@@ -36,7 +39,7 @@ def do_train(parser):
 
     device_id = int(os.getenv('DEVICE_ID'))
     device_num = int(os.getenv('RANK_SIZE', '1'))
-    context.set_context(mode=context.GRAPH_MODE, device_target="Ascend")
+    context.set_context(mode=context.GRAPH_MODE, device_target="GPU")
     run_distribute = int(os.getenv('DISTRIBUTE'))
     if run_distribute == 1:
         context.set_context(device_id=device_id)  # set device_id
@@ -119,10 +122,10 @@ def do_train(parser):
 def main():
     """train logic"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("network", default="3d_fullres")
-    parser.add_argument("network_trainer")
-    parser.add_argument("task", help="can be task name or task id")
-    parser.add_argument("fold", help='0, 1, ..., 5 or \'all\'')
+    parser.add_argument("-network", default="3d_fullres", required=False)
+    parser.add_argument("-network_trainer", default="nnUNetTrainerV2", required=False)
+    parser.add_argument("-task", default="Task040_KiTS", help="can be task name or task id", required=False)
+    parser.add_argument("-fold", default=4, help='0, 1, ..., 5 or \'all\'', required=False)
     parser.add_argument("-val", "--validation_only", help="use this if you want to only run the validation",
                         action="store_true")
     parser.add_argument("-c", "--continue_training", help="use this if you want to continue a training",
