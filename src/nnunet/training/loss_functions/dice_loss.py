@@ -53,11 +53,11 @@ class DC_and_CE_loss(LossBase):
         self.weight_ce = weight_ce
         self.aggregate = aggregate
 
-        if soft_dice_kwargs["loss_type"] == '3d':
-            self.ce = RobustCrossEntropyLoss(**ce_kwargs)
-        else:
-            self.ce = RobustCrossEntropyLoss2d(**ce_kwargs)
-
+        # if soft_dice_kwargs["loss_type"] == '3d':
+        #     self.ce = RobustCrossEntropyLoss(**ce_kwargs)
+        # else:
+        #     self.ce = RobustCrossEntropyLoss2d(**ce_kwargs)
+        self.ce = RobustCrossEntropyLoss(**ce_kwargs)
         self.transpose = ops.Transpose()
         self.ignore_label = ignore_label
         self.reshape = ops.Reshape()

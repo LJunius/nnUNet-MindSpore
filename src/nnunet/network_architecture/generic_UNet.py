@@ -16,6 +16,7 @@
 """Generic_UNet class"""
 
 from copy import deepcopy
+from re import X
 
 import mindspore as ms
 import mindspore.nn as nn
@@ -472,34 +473,59 @@ class Generic_UNet(SegmentationNetwork):
         """construct network"""
         skips = []
         seg_outputs = []
+        # print("hello")
+        # exit(0)
+        for d in range(len(self.conv_blocks_context) - 1):
+            x = self.conv_blocks_context[d](x)
+            skips.append(x)
+            # if not self.convolutional_pooling:
+            #     x = self.td[d](x)
+            # print(x.shape)
+            
 
-        x = self.conv_blocks_context[0](x)
-        skips.append(x)
-        x = self.conv_blocks_context[1](x)
-        skips.append(x)
-        x = self.conv_blocks_context[2](x)
-        skips.append(x)
-        x = self.conv_blocks_context[3](x)
-        x = self.tu[0](x)
-        x = ops.Concat(1)((x, skips[-(0 + 1)]))
-        x = self.conv_blocks_localization[0](x)
-        x0 = self.seg_outputs[0](x)
+        # x = self.conv_blocks_context[0](x)
+        # skips.append(x)
+        # x = self.conv_blocks_context[1](x)
+        # skips.append(x)
+        # x = self.conv_blocks_context[2](x)
+        # skips.append(x)
+        # x = self.conv_blocks_context[3](x)
 
-        seg_outputs.append(self.final_nonlin(x0))
+        x = self.conv_blocks_context[-1](x)
+        # print(x.shape)
+        # print(self.tu[0])
+        # exit(0)
+        for u in range(len(self.tu)):
+            x = self.tu[u](x)
+            # print(x.shape, skips[-(u + 1)].shape)
+            x = ops.Concat(1)((x, skips[-(u + 1)]))
+            x = self.conv_blocks_localization[u](x)
+            seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
+            # exit(0)
+            # x = torch.cat((x, skips[-(u + 1)]), dim=1)
+            # x = self.conv_blocks_localization[u](x)
+            # seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
+        # exit(0)
+        
 
-        x = self.tu[1](x)
-        x = ops.Concat(1)((x, skips[-(1 + 1)]))
-        x = self.conv_blocks_localization[1](x)
-        x1 = self.seg_outputs[1](x)
-        seg_outputs.append(self.final_nonlin(x1))
-        x = self.tu[2](x)
-        x = ops.Concat(1)((x, skips[-(2 + 1)]))
-        x = self.conv_blocks_localization[2](x)
-        x2 = self.seg_outputs[2](x)
-        seg_outputs.append(self.final_nonlin(x2))
+        # seg_outputs.append(self.final_nonlin(x0))
+
+        # x = self.tu[1](x)
+        # x = ops.Concat(1)((x, skips[-(1 + 1)]))
+        # x = self.conv_blocks_localization[1](x)
+        # x1 = self.seg_outputs[1](x)
+        # seg_outputs.append(self.final_nonlin(x1))
+        # x = self.tu[2](x)
+        # x = ops.Concat(1)((x, skips[-(2 + 1)]))
+        # x = self.conv_blocks_localization[2](x)
+        # x2 = self.seg_outputs[2](x)
+        # seg_outputs.append(self.final_nonlin(x2))
+        # print("generic_mindspore",len(seg_outputs))
 
         if self._deep_supervision and self.do_ds:
-            return ([seg_outputs[-1]] + [seg_outputs[1], seg_outputs[0]])
+            # return ([seg_outputs[-1]] + [seg_outputs[1], seg_outputs[0]])
+            return tuple([seg_outputs[-1]] + [i(j) for i, j in
+                                              zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
 
         if not self._deep_supervision and not self.do_ds:
             return seg_outputs[-1]

@@ -15,6 +15,7 @@
 
 """network trainer"""
 
+from statistics import mean
 import sys
 from time import time, sleep
 from collections import OrderedDict
@@ -105,7 +106,7 @@ class NetworkTrainer():
         self.log_file = None
         self.deterministic = deterministic
 
-        self.use_progress_bar = False
+        self.use_progress_bar = True
         if 'nnunet_use_progress_bar' in os.environ.keys():
             self.use_progress_bar = bool(int(os.environ['nnunet_use_progress_bar']))
 
@@ -204,7 +205,7 @@ class NetworkTrainer():
         """print information to log file"""
         timestamp = time()
         dt_object = datetime.fromtimestamp(timestamp)
-
+        self.output_folder = '/home/chengshuang/seg_competetion/zzn/nnUNet-MindSpore/exp/'
         if add_timestamp:
             args = ("%s:" % dt_object, *args)
 
