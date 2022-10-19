@@ -317,19 +317,11 @@ class nnUNetTrainerV2(nnUNetTrainer):
         """run iteration"""
         data_dict = next(data_generator)
         data = data_dict['data']#<class 'numpy.ndarray'>
-        print(np.mean(data))
         target_o = data_dict['target'][0]
-        # print(type(data_dict['target']))
-        # print(len(data_dict['target']))
-        # print(len(data_dict['target'][0]))
-        # exit(1)
 
         target = data_dict['target']
 
         data = maybe_to_mindspore(data)
-        # print(type(data))
-        # print(sum(data))
-        # exit(-2)
 
         target_1 = Tensor(self.one_hot(target[1]), mindspore.float32)
         target_0 = Tensor(self.one_hot(target[0]), mindspore.float32)

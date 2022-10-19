@@ -67,7 +67,7 @@ class ConvDropoutNormNonlin(nn.SequentialCell):
             self.dropout = self.dropout_op(**self.dropout_op_kwargs)
         else:
             self.dropout = None
-        self.instancenorm = self.norm_op(output_channels * 9, **self.norm_op_kwargs)  # for task04
+        self.instancenorm = self.norm_op(output_channels, **self.norm_op_kwargs)  # changed
         self.lrelu = self.nonlin(**self.nonlin_kwargs)
 
     def construct(self, x):
@@ -75,10 +75,11 @@ class ConvDropoutNormNonlin(nn.SequentialCell):
         shape = ops.Shape()
         x = self.conv(x)
         n, c, d, w, h = shape(x)
-        x = ops.Reshape()(x, (1, n * c, d, h, w))
+        # x = ops.Reshape()(x, (1, n * c, d, h, w))
         x = self.instancenorm(x)
-        x = ops.Reshape()(x, (n, c, d, h, w))
-
+        # x = ops.Reshape()(x, (n, c, d, h, w))
+        if self.dropout is not None:
+            x = self.dropout(x)
         return self.lrelu(x)
 
 

@@ -28,7 +28,7 @@ from src.nnunet.run.load_pretrained_weights import load_pretrained_weights
 from src.nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
 from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 
-os.environ['DEVICE_ID'] = '3'
+os.environ['DEVICE_ID'] = '1'
 # os.environ['RANK_SIZE'] = '1'
 os.environ['DISTRIBUTE'] = '0'
 def do_train(parser):
