@@ -641,16 +641,20 @@ class nnUNetTrainer(NetworkTrainer):
         tp_hard = np.zeros((target.shape[0], num_classes - 1))
         fp_hard = np.zeros((target.shape[0], num_classes - 1))
         fn_hard = np.zeros((target.shape[0], num_classes - 1))
-        # print(output_seg.shape, target.shape)
-       
+
         for c in range(1, num_classes):
-            # print(((output_seg.asnumpy() == c).astype(np.float32) * (target == c).astype(np.float32)).shape)
-            # print(self.sum_tensor)
-            # exit(0)
-            tp_hard[:, c - 1] = self.sum_tensor((output_seg.asnumpy() == c).astype(np.float32) * (target == c).astype(np.float32), axes=axes)
-            fp_hard[:, c - 1] = self.sum_tensor((output_seg.asnumpy() == c).astype(np.float32) * (target != c).astype(np.float32), axes=axes)
-            fn_hard[:, c - 1] = self.sum_tensor((output_seg.asnumpy() != c).astype(np.float32) * (target == c).astype(np.float32), axes=axes)
-        # exit(0)
+            output_seg_equal_c = (output_seg.asnumpy() == c)
+            output_seg_equal_c = output_seg_equal_c.astype(np.int32)
+            output_seg_not_equal_c = (output_seg.asnumpy() != c)
+            output_seg_not_equal_c = (output_seg_not_equal_c).astype(np.int32)
+
+            target_equal_c = (target == c).astype(np.int32)
+            target_not_equal_c = (target != c).astype(np.int32)
+
+            tp_hard[:, c - 1] = self.sum_tensor(output_seg_equal_c * (target_equal_c), axes=axes)
+            fp_hard[:, c - 1] = self.sum_tensor(output_seg_equal_c * (target_not_equal_c), axes=axes)
+            fn_hard[:, c - 1] = self.sum_tensor(output_seg_not_equal_c * (target_equal_c), axes=axes)
+
 
         tp_hard = tp_hard.sum(0, keepdims=False)
         fp_hard = fp_hard.sum(0, keepdims=False)
