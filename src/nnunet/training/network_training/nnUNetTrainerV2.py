@@ -83,11 +83,11 @@ class WithLossCell(nn.Cell):
         self._backbone = backbone
         self._loss_fn = loss_fn
 
-    def construct(self, data, y_0, y_1, y_2):
+    def construct(self, data, y):
         """construct loss"""
         out = self._backbone(data)
 
-        return self._loss_fn(out, y_0, y_1, y_2)
+        return self._loss_fn(out, y)
 
 
 class WithEvalCell(nn.Cell):
@@ -99,10 +99,10 @@ class WithEvalCell(nn.Cell):
         self._loss_fn = loss_fn
         self.add_cast_fp32 = validator.check_value_type("add_cast_fp32", add_cast_fp32, [bool], self.cls_name)
 
-    def construct(self, data, y0, y1, y2):
+    def construct(self, data, y):
         """construct forward"""
         outputs = self._network(data)
-        loss = self._loss_fn(outputs, y0, y1, y2)
+        loss = self._loss_fn(outputs, y)
         return loss, outputs
 
 
@@ -323,16 +323,17 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
         data = maybe_to_mindspore(data)
 
-        target_1 = Tensor(self.one_hot(target[1]), mindspore.float32)
-        target_0 = Tensor(self.one_hot(target[0]), mindspore.float32)
-        target_2 = Tensor(self.one_hot(target[2]), mindspore.float32)
+        # target_1 = Tensor(self.one_hot(target[1]), mindspore.float32)
+        # target_0 = Tensor(self.one_hot(target[0]), mindspore.float32)
+        # target_2 = Tensor(self.one_hot(target[2]), mindspore.float32)
+        for i in range(len(target)):
+            target[i] = Tensor(target[i], mindspore.float32)
 
-        l = self.train_net(data, target_0, target_1, target_2)
+        l = self.train_net(data, target)
 
-        output = self.eval_net(data, target_0, target_1, target_2)
-
+        loss, output = self.eval_net(data, target)
         if run_online_evaluation:
-            self.run_online_evaluation(output[1], target_o)
+            self.run_online_evaluation(output, target_o)
 
         del target
         return l.asnumpy()

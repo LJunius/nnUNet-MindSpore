@@ -14,12 +14,13 @@
 # ============================================================================
 
 """crossentropy module"""
-
+import mindspore
 import mindspore.nn as nn
 from mindspore import dtype as mstype
 from mindspore.nn.loss.loss import LossBase
 from mindspore.ops import operations as P
 
+import numpy as np
 
 class nnUnet_SoftmaxCrossEntropyWithLogits(LossBase):
     """
@@ -36,6 +37,12 @@ class nnUnet_SoftmaxCrossEntropyWithLogits(LossBase):
         self.num_classes = 3  # task04 3 classfication
 
     def construct(self, logits, label):
+        y_onehot = mindspore.ops.stop_gradient(mindspore.Tensor(np.zeros(logits.shape)))
+        y_onehot[:,0,:] = (label[:,0,:,:,:]==0)
+        y_onehot[:,1,:] = (label[:,0,:,:,:]==1)
+        y_onehot[:,2,:] = (label[:,0,:,:,:]==2)
+
+        label = mindspore.ops.stop_gradient(y_onehot)
         logits = self.transpose(logits, (0, 2, 3, 4, 1))
         label = self.transpose(label, (0, 2, 3, 4, 1))
         label = self.cast(label, mstype.float32)

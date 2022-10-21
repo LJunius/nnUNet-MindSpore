@@ -31,11 +31,17 @@ class MultipleOutputLoss2(nn.Cell):
         self.weight_factors = Tensor(weight_factors, mindspore.float32)
         self.loss = loss
 
-    def construct(self, x, y_0, y_1, y_2):
+    def construct(self, x, y):
         """construct deepsupervision"""
-        weights = self.weight_factors
-        l = weights[0] * self.loss(x[0], y_0)
-        l += weights[1] * self.loss(x[1], y_1)
-        l += weights[2] * self.loss(x[2], y_2)
+        assert isinstance(x, (tuple, list)), "x must be either tuple or list"
+        assert isinstance(y, (tuple, list)), "y must be either tuple or list"
+        if self.weight_factors is None:
+            weights = [1] * len(x)
+        else:
+            weights = self.weight_factors
 
+        l = weights[0] * self.loss(x[0], y[0])
+        for i in range(1, len(x)):
+            if weights[i] != 0:
+                l += weights[i] * self.loss(x[i], y[i])
         return l
