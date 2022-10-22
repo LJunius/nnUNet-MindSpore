@@ -20,6 +20,8 @@ from collections import OrderedDict
 from multiprocessing import Pool
 from time import sleep
 from typing import Tuple, List
+
+import wandb
 from batchgenerators.utilities.file_and_folder_operations import join, \
     isfile, isdir, maybe_mkdir_p, save_json, load_pickle, write_pickle, subfiles
 
@@ -677,6 +679,10 @@ class nnUNetTrainer(NetworkTrainer):
         self.all_val_eval_metrics.append(np.mean(global_dc_per_class))
 
         self.print_to_log_file("Average global foreground Dice:", [np.round(i, 4) for i in global_dc_per_class])
+        dice_log = {}
+        for i, dice in enumerate(global_dc_per_class):
+            dice_log[f'dice_{i+1}'] = dice
+        wandb.log(dice_log, step=self.epoch)
         self.print_to_log_file("(interpret this as an estimate for the Dice of the different classes. This is not "
                                "exact.)")
 

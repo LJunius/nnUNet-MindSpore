@@ -37,6 +37,7 @@ from src.nnunet.training.loss_functions.deep_supervision import MultipleOutputLo
 from src.nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
 from src.nnunet.utilities.nd_softmax import softmax_helper
 from src.nnunet.utilities.to_mindspore import maybe_to_mindspore
+from train import wandb
 
 loss_scale = 1024.
 loss_scale_manager = FixedLossScaleManager(loss_scale, False)
@@ -332,6 +333,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
         l = self.train_net(data, target)
 
         loss, output = self.eval_net(data, target)
+
         if run_online_evaluation:
             self.run_online_evaluation(output, target_o)
 
@@ -469,6 +471,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
             ep = epoch
 
         self.print_to_log_file("lr:", np.round(self.lr[ep], decimals=6))
+        wandb.log({'learning_rate': self.lr[ep]}, step=ep)
 
     def on_epoch_end(self):
         """

@@ -28,10 +28,13 @@ from src.nnunet.run.load_pretrained_weights import load_pretrained_weights
 from src.nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
 from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 
+import wandb
+
 os.environ['DEVICE_ID'] = '1'
 # os.environ['RANK_SIZE'] = '1'
 os.environ['DISTRIBUTE'] = '0'
 def do_train(parser):
+    wandb.init(project="Kit19", entity="dog-left")
     """train logic according to parser args"""
     args = parser.parse_args()
     task = args.task
@@ -100,6 +103,14 @@ def do_train(parser):
 
     trainer.initialize(not validation_only)
 
+
+    config = {
+        "learning_rate": trainer.lr_scheduler_eps,
+        "epochs": trainer.max_num_epochs,
+        "batch_size": trainer.batch_size
+    }
+    wandb.config.update(config)
+
     if find_lr:
         trainer.find_lr()
     else:
@@ -125,7 +136,7 @@ def main():
     parser.add_argument("-network", default="3d_fullres", required=False)
     parser.add_argument("-network_trainer", default="nnUNetTrainerV2", required=False)
     parser.add_argument("-task", default="Task040_KiTS", help="can be task name or task id", required=False)
-    parser.add_argument("-fold", default=4, help='0, 1, ..., 5 or \'all\'', required=False)
+    parser.add_argument("-fold", default=1, help='0, 1, ..., 5 or \'all\'', required=False)
     parser.add_argument("-val", "--validation_only", help="use this if you want to only run the validation",
                         action="store_true")
     parser.add_argument("-c", "--continue_training", help="use this if you want to continue a training",
