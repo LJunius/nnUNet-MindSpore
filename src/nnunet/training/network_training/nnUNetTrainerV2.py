@@ -318,7 +318,6 @@ class nnUNetTrainerV2(nnUNetTrainer):
         """run iteration"""
         data_dict = next(data_generator)
         data = data_dict['data']#<class 'numpy.ndarray'>
-        target_o = data_dict['target'][0]
 
         target = data_dict['target']
 
@@ -329,7 +328,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
         # target_2 = Tensor(self.one_hot(target[2]), mindspore.float32)
         for i in range(len(target)):
             target[i] = Tensor(target[i], mindspore.float32)
-
+        target_o = target[0]
         l = self.train_net(data, target)
 
         loss, output = self.eval_net(data, target)

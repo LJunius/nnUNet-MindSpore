@@ -356,7 +356,7 @@ class NetworkTrainer():
                 with trange(self.num_batches_per_epoch) as tbar:
                     for _ in tbar:
                         tbar.set_description("Epoch {}/{}".format(self.epoch + 1, self.max_num_epochs))
-                        l = self.run_iteration(self.tr_gen, True, True)
+                        l = self.run_iteration(self.tr_gen, True, False)
                         tbar.set_postfix(loss=l)
                         train_losses_epoch.append(l)
             else:
