@@ -31,23 +31,23 @@ class nnUnet_SoftmaxCrossEntropyWithLogits(LossBase):
         super(nnUnet_SoftmaxCrossEntropyWithLogits, self).__init__()
         self.transpose = P.Transpose()
         self.reshape = P.Reshape()
-        self.loss_fn = nn.SoftmaxCrossEntropyWithLogits(sparse=True)
+        self.loss_fn = nn.SoftmaxCrossEntropyWithLogits(sparse=False)
         self.cast = P.Cast()
         self.reduce_mean = P.ReduceMean()
         self.num_classes = 3  # task04 3 classfication
 
     def construct(self, logits, label):
-        # y_onehot = mindspore.ops.stop_gradient(mindspore.Tensor(np.zeros(logits.shape)))
-        # y_onehot[:,0,:] = (label[:,0,:,:,:]==0)
-        # y_onehot[:,1,:] = (label[:,0,:,:,:]==1)
-        # y_onehot[:,2,:] = (label[:,0,:,:,:]==2)
-        # label = mindspore.ops.stop_gradient(y_onehot)
+        y_onehot = mindspore.ops.stop_gradient(mindspore.Tensor(np.zeros(logits.shape)))
+        y_onehot[:,0,:] = (label[:,0,:,:,:]==0)
+        y_onehot[:,1,:] = (label[:,0,:,:,:]==1)
+        y_onehot[:,2,:] = (label[:,0,:,:,:]==2)
 
-        label = label[:,0]
+        label = mindspore.ops.stop_gradient(y_onehot)
         logits = self.transpose(logits, (0, 2, 3, 4, 1))
-        label = self.cast(label, mstype.int64)
+        label = self.transpose(label, (0, 2, 3, 4, 1))
+        label = self.cast(label, mstype.float32)
         loss = self.reduce_mean(self.loss_fn(self.reshape(logits, (-1, self.num_classes)), \
-                                             self.reshape(label, (-1,))))
+                                             self.reshape(label, (-1, self.num_classes))))
         return self.get_loss(loss)
 
 

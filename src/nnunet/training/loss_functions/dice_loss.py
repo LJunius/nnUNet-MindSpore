@@ -126,11 +126,9 @@ class SoftDiceLoss(nn.Cell):
                 dc = dc[1:]
             else:
                 dc = dc[:, 1:]
-        # print(dc)
-        # exit(0)
-        # dc = dc.mean()
-        dc_loss = 1/3*dc[0] + 2/3*dc[1]
-        return -dc_loss
+        dc = dc.mean()
+
+        return -dc
 
 
 class DC_and_CE_loss(LossBase):
