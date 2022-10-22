@@ -633,20 +633,18 @@ class nnUNetTrainer(NetworkTrainer):
         output_softmax = softmax_helper(output)
 
         output_seg = output_softmax.argmax(1)
+        # print("output_seg.shape", output_seg.shape)
+        target = target_o[:, 0].asnumpy()
 
-        target = target_o[:, 0]
+        axes = tuple(range(1, len(target.shape))) #axes = (1, 2, 3)
 
-        axes = tuple(range(1, len(target.shape)))
-
-        tp_hard = np.zeros((target.shape[0], num_classes - 1))
+        tp_hard = np.zeros((target.shape[0], num_classes - 1)) # bsz x 2
         fp_hard = np.zeros((target.shape[0], num_classes - 1))
         fn_hard = np.zeros((target.shape[0], num_classes - 1))
 
         for c in range(1, num_classes):
-            output_seg_equal_c = (output_seg.asnumpy() == c)
-            output_seg_equal_c = output_seg_equal_c.astype(np.int32)
-            output_seg_not_equal_c = (output_seg.asnumpy() != c)
-            output_seg_not_equal_c = (output_seg_not_equal_c).astype(np.int32)
+            output_seg_equal_c = (output_seg.asnumpy() == c).astype(np.int32)
+            output_seg_not_equal_c = (output_seg.asnumpy() != c).astype(np.int32)
 
             target_equal_c = (target == c).astype(np.int32)
             target_not_equal_c = (target != c).astype(np.int32)
@@ -661,6 +659,7 @@ class nnUNetTrainer(NetworkTrainer):
         fn_hard = fn_hard.sum(0, keepdims=False)
 
         self.online_eval_foreground_dc.append(list((2 * tp_hard) / (2 * tp_hard + fp_hard + fn_hard + 1e-8)))
+        # self.print_to_log_file("online_eval_foreground_dc:", np.round(self.online_eval_foreground_dc[-1], 4))
         self.online_eval_tp.append(list(tp_hard))
         self.online_eval_fp.append(list(fp_hard))
         self.online_eval_fn.append(list(fn_hard))
