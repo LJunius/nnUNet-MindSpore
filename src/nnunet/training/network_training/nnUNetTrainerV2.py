@@ -279,7 +279,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                                                                        mixed_precision=mixed_precision,
                                                                        file_name=file_name,
                                                                        img_path=img_path,
-                                                                       covert_Ascend310_file=True)
+                                                                       covert_Ascend310_file=covert_Ascend310_file)
         self.network.do_ds = ds
         return ret
 

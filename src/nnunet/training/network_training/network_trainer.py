@@ -205,7 +205,7 @@ class NetworkTrainer():
         """print information to log file"""
         timestamp = time()
         dt_object = datetime.fromtimestamp(timestamp)
-        self.output_folder = '/home/chengshuang/seg_competetion/zzn/nnUNet-MindSpore/exp/'
+        # self.output_folder = '/home/chengshuang/seg_competetion/zzn/nnUNet-MindSpore/exp/'
         if add_timestamp:
             args = ("%s:" % dt_object, *args)
 

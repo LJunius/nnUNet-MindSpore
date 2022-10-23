@@ -62,6 +62,9 @@ class SegmentationNetwork(nn.Cell):
         """lambda function x"""
         return x
 
+    def get_dice(self):
+        return int(os.environ['DEVICE_ID'])
+
     def predict_3D(self, x: np.ndarray, do_mirroring: bool, mirror_axes: Tuple[int, ...] = (0, 1, 2),
                    use_sliding_window: bool = False,
                    step_size: float = 0.5, patch_size: Tuple[int, ...] = None,
@@ -71,7 +74,7 @@ class SegmentationNetwork(nn.Cell):
                    verbose: bool = True, mixed_precision: bool = True,
                    file_name: str = None,
                    img_path: str = None,
-                   covert_Ascend310_file: bool = True
+                   covert_Ascend310_file: bool = False
                    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Use this function to predict a 3D image. It does not matter whether the network is a 2D or 3D U-Net, it will
@@ -144,7 +147,7 @@ class SegmentationNetwork(nn.Cell):
                                                                  verbose=verbose,
                                                                  file_name=file_name,
                                                                  img_path=img_path,
-                                                                 covert_Ascend310_file=True
+                                                                 covert_Ascend310_file=covert_Ascend310_file
                                                                  )
                 else:
                     res = self._internal_predict_3D_3Dconv(x, patch_size, do_mirroring, mirror_axes,
@@ -158,7 +161,7 @@ class SegmentationNetwork(nn.Cell):
                                                                  pad_kwargs, all_in_gpu, False,
                                                                  file_name=file_name,
                                                                  img_path=img_path,
-                                                                 covert_Ascend310_file=True
+                                                                 covert_Ascend310_file=covert_Ascend310_file
                                                                  )
                 else:
                     res = self._internal_predict_3D_2Dconv(x, patch_size, do_mirroring, mirror_axes,
@@ -304,7 +307,7 @@ class SegmentationNetwork(nn.Cell):
                                           verbose: bool,
                                           file_name: str = None,
                                           img_path: str = None,
-                                          covert_Ascend310_file: bool = True
+                                          covert_Ascend310_file: bool = False
                                           ) -> Tuple[np.ndarray, np.ndarray]:
         """internal predict 3Dconv tiled"""
         # better safe than sorry
@@ -360,27 +363,26 @@ class SegmentationNetwork(nn.Cell):
             if use_gaussian and num_tiles > 1:
                 # half precision for the outputs should be good enough. If the outputs here are half, the
                 # gaussian_importance_map should be as well
-                gaussian_importance_map = gaussian_importance_map.half()
-
-                # make sure we did not round anything to 0
-                gaussian_importance_map[gaussian_importance_map == 0] = gaussian_importance_map[
-                    gaussian_importance_map != 0].min()
+                # gaussian_importance_map = gaussian_importance_map.half() TODO:lj
+                #
+                # # make sure we did not round anything to 0
+                # gaussian_importance_map[gaussian_importance_map == 0] = gaussian_importance_map[
+                #     gaussian_importance_map != 0].min()
 
                 add_for_nb_of_preds = gaussian_importance_map
             else:
-                add_for_nb_of_preds = mindspore.ones(patch_size, device=self.get_device())
+                ones = mindspore.ops.Ones()
+                add_for_nb_of_preds = ones(patch_size, mindspore.float32)
 
             if verbose: print("initializing result array (on GPU)")
-            aggregated_results = mindspore.ops.Zeros([self.num_classes] + list(data.shape[1:]), dtype=mindspore.half,
-                                                     device=self.get_device())
+            zeros = mindspore.ops.Zeros()
+            aggregated_results = zeros(tuple([self.num_classes, ] + list(data.shape[1:])), mindspore.float32)
 
             if verbose: print("moving data to GPU")
-            data = mindspore.tensor.from_numpy(data).cuda(self.get_device(), non_blocking=True)
+            data = mindspore.Tensor.from_numpy(data)
 
             if verbose: print("initializing result_numsamples (on GPU)")
-            aggregated_nb_of_predictions = mindspore.ops.Zeros([self.num_classes] + list(data.shape[1:]),
-                                                               dtype=mindspore.half,
-                                                               device=self.get_device())
+            aggregated_nb_of_predictions = zeros(tuple([self.num_classes] + list(data.shape[1:])), mindspore.float32)
 
         else:
             if use_gaussian and num_tiles > 1:
@@ -399,7 +401,7 @@ class SegmentationNetwork(nn.Cell):
                 for z in steps[2]:
                     lb_z = z
                     ub_z = z + patch_size[2]
-
+                    lb_x, ub_x, lb_y, ub_y, lb_z, ub_z = int(lb_x), int(ub_x), int(lb_y), int(ub_y), int(lb_z), int(ub_z)
                     predicted_patch = self._internal_maybe_mirror_and_pred_3D(
                         data[None, :, lb_x:ub_x, lb_y:ub_y, lb_z:ub_z], mirror_axes, do_mirroring,
                         gaussian_importance_map)[0]
@@ -421,7 +423,7 @@ class SegmentationNetwork(nn.Cell):
                         bboxes_num += 1
 
                     if all_in_gpu:
-                        predicted_patch = predicted_patch.half()
+                        predicted_patch = predicted_patch
                     else:
                         predicted_patch = predicted_patch.asnumpy()
                     print("predicted_patch", predicted_patch.shape)
@@ -431,8 +433,9 @@ class SegmentationNetwork(nn.Cell):
 
         # we reverse the padding here (remember that we padded the input to be at least as large as the patch size
         slicer = tuple(
-            [slice(0, aggregated_results.shape[i]) for i in
-             range(len(aggregated_results.shape) - (len(slicer) - 1))] + slicer[1:])
+            [slice(0, int(aggregated_results.shape[i])) for i in
+             range(len(aggregated_results.shape) - (len(slicer) - 1))] +
+            [slice(int(s.start), int(s.stop)) for s in slicer[1:]])
 
         if covert_Ascend310_file:
             # Mindspore
@@ -460,12 +463,13 @@ class SegmentationNetwork(nn.Cell):
         # computing the class_probabilities by dividing the aggregated result with result_numsamples
         class_probabilities = aggregated_results / aggregated_nb_of_predictions
         # Mindspore record bboxes nb_of_predictions
+        del aggregated_nb_of_predictions
 
         if regions_class_order is None:
             predicted_segmentation = class_probabilities.argmax(0)
         else:
             if all_in_gpu:
-                class_probabilities_here = class_probabilities.detach().cpu().numpy()
+                class_probabilities_here = class_probabilities.asnumpy()
             else:
                 class_probabilities_here = class_probabilities
             predicted_segmentation = np.zeros(class_probabilities_here.shape[1:], dtype=np.float32)
@@ -476,9 +480,9 @@ class SegmentationNetwork(nn.Cell):
             if verbose: print("copying results to CPU")
 
             if regions_class_order is None:
-                predicted_segmentation = predicted_segmentation.detach().cpu().numpy()
+                predicted_segmentation = predicted_segmentation.asnumpy()
 
-            class_probabilities = class_probabilities.detach().cpu().numpy()
+            class_probabilities = class_probabilities.asnumpy()
 
         if verbose: print("prediction done")
         print("predicted_segmentation.shape", predicted_segmentation.shape)
@@ -511,10 +515,10 @@ class SegmentationNetwork(nn.Cell):
 
         if regions_class_order is None:
             predicted_segmentation = predicted_probabilities.argmax(0)
-            predicted_segmentation = predicted_segmentation.detach().cpu().numpy()
-            predicted_probabilities = predicted_probabilities.detach().cpu().numpy()
+            predicted_segmentation = predicted_segmentation.asnumpy()
+            predicted_probabilities = predicted_probabilities.asnumpy()
         else:
-            predicted_probabilities = predicted_probabilities.detach().cpu().numpy()
+            predicted_probabilities = predicted_probabilities.asnumpy()
             predicted_segmentation = np.zeros(predicted_probabilities.shape[1:], dtype=np.float32)
             for i, c in enumerate(regions_class_order):
                 predicted_segmentation[predicted_probabilities[i] > 0.5] = c
@@ -577,10 +581,10 @@ class SegmentationNetwork(nn.Cell):
             mirror_idx = 1
             num_results = 1
 
-        x = x.asnumpy()
-        input_tensor = np.repeat(x, 9, 0)
-
-        x = mindspore.Tensor(input_tensor)
+        # x = x.asnumpy()
+        # input_tensor = np.repeat(x, 1, 0)
+        #
+        # x = mindspore.Tensor(input_tensor)
         for m in range(mirror_idx):
             if m == 0:
                 pred = self.inference_apply_nonlin(self(x)[0])[0]
@@ -683,7 +687,7 @@ class SegmentationNetwork(nn.Cell):
                                           verbose: bool,
                                           file_name: str = None,
                                           img_path: str = None,
-                                          covert_Ascend310_file: bool = True,
+                                          covert_Ascend310_file: bool = False,
                                           slice_num: int = 0) -> Tuple[np.ndarray, np.ndarray]:
         """internal predict 2Dcov tiled"""
         # better safe than sorry
@@ -835,7 +839,7 @@ class SegmentationNetwork(nn.Cell):
             predicted_segmentation = class_probabilities.argmax(0)
         else:
             if all_in_gpu:
-                class_probabilities_here = class_probabilities.detach().cpu().numpy()
+                class_probabilities_here = class_probabilities.asnumpy()
             else:
                 class_probabilities_here = class_probabilities
             predicted_segmentation = np.zeros(class_probabilities_here.shape[1:], dtype=np.float32)
@@ -846,9 +850,9 @@ class SegmentationNetwork(nn.Cell):
             if verbose: print("copying results to CPU")
 
             if regions_class_order is None:
-                predicted_segmentation = predicted_segmentation.detach().cpu().numpy()
+                predicted_segmentation = predicted_segmentation.asnumpy()
 
-            class_probabilities = class_probabilities.detach().cpu().numpy()
+            class_probabilities = class_probabilities.asnumpy()
 
         if verbose: print("prediction done")
         return predicted_segmentation, class_probabilities
@@ -913,7 +917,7 @@ class SegmentationNetwork(nn.Cell):
                                           verbose: bool = True,
                                           file_name: str = None,
                                           img_path: str = None,
-                                          covert_Ascend310_file: bool = True
+                                          covert_Ascend310_file: bool = False
                                           ) -> Tuple[np.ndarray, np.ndarray]:
         """internal predict 3D 2D conv tiled"""
         if all_in_gpu:

@@ -14,24 +14,11 @@
 # limitations under the License.
 # ============================================================================
 
-if [ $# != 1 ]
-then
-    echo "Usage: bash run_eval.sh [NETWORK] "
-exit 1
-fi
-
-get_real_path(){
-    BASE_PATH=$(cd ./"`dirname $0`" || exit; pwd)
-    path=$(dirname ${BASE_PATH})
-    echo $path/
-}
-path=$(get_real_path)  
 export DISTRIBUTE=0
-export DEVICE_ID=0
-export nnUNet_raw_data_base="$path/src/nnUNetFrame/DATASET/nnUNet_raw"
-export nnUNet_preprocessed="$path/src/nnUNetFrame/DATASET/nnUNet_preprocessed"
-export RESULTS_FOLDER="$path/src/nnUNetFrame/DATASET/nnUNet_trained_models"
+export DEVICE_ID=2
+export nnUNet_raw_data_base="/home/i/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/imagesTr"
+export nnUNet_preprocessed="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_preprocessed"
+export RESULTS_FOLDER="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_trained_models"
 
-cd $path
-python eval.py -i $path/src/nnUNetFrame/DATASET/nnUNet_raw/nnUNet_raw_data/Task004_Hippocampus/imagesVal/ -o $path/src/nnUNetFrame/DATASET/nnUNet_raw/nnUNet_raw_data/Task004_Hippocampus/inferTs -t 4 -m $1 -f 0  >> eval.log 2>&1 &
+python eval.py
 

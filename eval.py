@@ -28,25 +28,27 @@ from src.nnunet.inference.predict import predict_from_folder
 from src.nnunet.paths import default_plans_identifier, network_training_output_dir, default_cascade_trainer, \
     default_trainer
 from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
-
+os.environ['DEVICE_ID'] = '2'
+# os.environ['RANK_SIZE'] = '1'
+os.environ['DISTRIBUTE'] = '0'
 def do_eval(parser):
     """eval logic according to parser logic"""
     device_id = int(os.getenv('DEVICE_ID'))
-    run_distribute = int(os.getenv('distribute'))
+    run_distribute = int(os.getenv('DISTRIBUTE'))
     if run_distribute == 1:
         init()
         context.set_auto_parallel_context(parallel_mode=ParallelMode.AUTO_PARALLEL, gradients_mean=True)
         context.set_context(mode=context.GRAPH_MODE, device_target="Ascend")
         context.set_context(device_id=device_id)  # set device_id
     else:
-        context.set_context(mode=context.GRAPH_MODE, device_target="Ascend")
+        context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
         context.set_context(device_id=device_id)  # set device_id
     args = parser.parse_args()
     input_folder = args.input_folder
     output_folder = args.output_folder
     part_id = args.part_id
     num_parts = args.num_parts
-    folds = args.folds
+    folds = list(args.folds)
     save_npz = args.save_npz
     lowres_segmentations = args.lowres_segmentations
     num_threads_preprocessing = args.num_threads_preprocessing
@@ -118,10 +120,12 @@ def main():
     """eval logic"""
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_folder',
-                        help="Must contain all modalities for each patient in the correct", required=True)
-    parser.add_argument('-o', "--output_folder", required=True, help="folder for saving predictions")
+                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/imagesTr",
+                        help="Must contain all modalities for each patient in the correct", required=False)
+    parser.add_argument('-o', "--output_folder", default="/home/chengshuang/seg_competetion/zzn/nnUNet-MindSpore/exp",
+                        required=False, help="folder for saving predictions")
     parser.add_argument('-t', '--task_name', help='task name or task ID, required.',
-                        default=default_plans_identifier, required=True)
+                        default="Task040_KiTS", required=False)
     parser.add_argument('-tr', '--trainer_class_name',
                         help='Name of the nnUNetTrainer used for 2D U-Net, full resolution 3D U-Net and low resolution',
                         required=False,
@@ -134,7 +138,7 @@ def main():
                         default="3d_fullres", required=False)
     parser.add_argument('-p', '--plans_identifier', help='do not touch this unless you know what you are doing',
                         default=default_plans_identifier, required=False)
-    parser.add_argument('-f', '--folds', nargs='+', default='None',
+    parser.add_argument('-f', '--folds', nargs='+', default='4',
                         help="folds to use for prediction. ")
     parser.add_argument('-z', '--save_npz', required=False, action='store_true',
                         help="use this if you want to ensemble these predictions with those of other models. Softmax")
@@ -151,7 +155,7 @@ def main():
     parser.add_argument("--overwrite_existing", required=False, default=False, action="store_true",
                         help="Set this flag if the target folder contains predictions that you would like to overwrite")
     parser.add_argument("--mode", type=str, default="normal", required=False, help="Hands off!")
-    parser.add_argument("--all_in_gpu", type=bool, default=None, required=False)
+    parser.add_argument("--all_in_gpu", type=bool, default=True, required=False)
     parser.add_argument("--step_size", type=float, default=0.5, required=False, help="don't touch")
     parser.add_argument('-chk',
                         help='checkpoint name, default: model_best',
@@ -162,7 +166,7 @@ def main():
                         default="./src/nnunet/preprocess_Result",
                         help="310 bin file_out_put")
     parser.add_argument("--covert_Ascend310_file", type=bool, required=False,
-                        default=True,
+                        default=False,
                         help="whether covert 310_file")
 
     do_eval(parser)
