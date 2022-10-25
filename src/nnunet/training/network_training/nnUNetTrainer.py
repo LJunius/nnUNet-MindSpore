@@ -450,7 +450,7 @@ class nnUNetTrainer(NetworkTrainer):
                                                          mixed_precision: bool = True,
                                                          file_name: str = None,
                                                          img_path: str = None,
-                                                         covert_Ascend310_file: bool = True) -> Tuple[
+                                                         covert_Ascend310_file: bool = False) -> Tuple[
                                                              np.ndarray, np.ndarray]:
         """predict preprocessed data return seg and softmax"""
         if pad_border_mode == 'constant' and pad_kwargs is None:
