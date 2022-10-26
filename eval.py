@@ -122,7 +122,7 @@ def main():
     parser.add_argument("-i", '--input_folder',
                         default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/imagesTr",
                         help="Must contain all modalities for each patient in the correct", required=False)
-    parser.add_argument('-o', "--output_folder", default="/home/chengshuang/seg_competetion/zzn/nnUNet-MindSpore/exp",
+    parser.add_argument('-o', "--output_folder", default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/predict",
                         required=False, help="folder for saving predictions")
     parser.add_argument('-t', '--task_name', help='task name or task ID, required.',
                         default="Task040_KiTS", required=False)
@@ -155,7 +155,7 @@ def main():
     parser.add_argument("--overwrite_existing", required=False, default=False, action="store_true",
                         help="Set this flag if the target folder contains predictions that you would like to overwrite")
     parser.add_argument("--mode", type=str, default="normal", required=False, help="Hands off!")
-    parser.add_argument("--all_in_gpu", type=bool, default=True, required=False)
+    parser.add_argument("--all_in_gpu", type=bool, default=False, required=False)
     parser.add_argument("--step_size", type=float, default=0.5, required=False, help="don't touch")
     parser.add_argument('-chk',
                         help='checkpoint name, default: model_best',

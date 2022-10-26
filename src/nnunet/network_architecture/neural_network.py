@@ -462,6 +462,7 @@ class SegmentationNetwork(nn.Cell):
 
         # computing the class_probabilities by dividing the aggregated result with result_numsamples
         class_probabilities = aggregated_results / aggregated_nb_of_predictions
+        # class_probabilities = zeros((3, 614, 550, 550), mindspore.float32)
         # Mindspore record bboxes nb_of_predictions
         del aggregated_nb_of_predictions
 

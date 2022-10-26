@@ -107,7 +107,11 @@ def do_train(parser):
     config = {
         "learning_rate": trainer.lr_scheduler_eps,
         "epochs": trainer.max_num_epochs,
-        "batch_size": trainer.batch_size
+        "batch_size": trainer.batch_size,
+        "fold": trainer.fold,
+        "network": args.network,
+        "trainer": args.network_trainer,
+        "fp32": args.fp32,
     }
     wandb.config.update(config)
 
