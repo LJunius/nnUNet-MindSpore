@@ -105,6 +105,7 @@ def do_train(parser):
 
 
     config = {
+        "repo": "mindspore",
         "learning_rate": trainer.lr_scheduler_eps,
         "epochs": trainer.max_num_epochs,
         "batch_size": trainer.batch_size,
