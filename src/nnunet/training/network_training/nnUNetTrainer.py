@@ -465,6 +465,7 @@ class nnUNetTrainer(NetworkTrainer):
 
         current_mode = self.network.training
         self.network.set_train(current_mode)
+        self.network.do_ds = False
         ret = self.network.predict_3D(data, do_mirroring=do_mirroring, mirror_axes=mirror_axes,
                                       use_sliding_window=use_sliding_window, step_size=step_size,
                                       patch_size=self.patch_size, regions_class_order=self.regions_class_order,

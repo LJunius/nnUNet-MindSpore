@@ -37,9 +37,9 @@ PLEASE READ paths.md FOR INFORMATION TO HOW TO SET THIS UP
 # base="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_copy/nnUNet_raw"
 # preprocessing_output_dir = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset_copy/nnUNet_preprocessed"
 # network_training_output_dir_base = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset_copy/nnUNet_trained_models"
-base="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw"
-preprocessing_output_dir = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_preprocessed"
-network_training_output_dir_base = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_trained_models"
+base="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_copy/nnUNet_raw"
+preprocessing_output_dir = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset_copy/nnUNet_preprocessed"
+network_training_output_dir_base = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset_copy/nnUNet_trained_models"
 
 
 if base is not None:
