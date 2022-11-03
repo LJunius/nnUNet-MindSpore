@@ -77,7 +77,9 @@ def get_tp_fp_fn_tn(net_output, gt, axes=None, mask=None, square=False):
         # if this is the case then gt is probably already a one hot encoding
         y_onehot = ops.stop_gradient(gt)
     else:
-        y_onehot = ops.stop_gradient(mindspore.Tensor(np.zeros(shp_x)))
+        y_onehot = ops.stop_gradient(mindspore.Tensor(np.zeros(shp_x,dtype=np.float32)))
+        # zeros=mindspore.ops.Zeros()
+        # y_onehot = ops.stop_gradient(zeros(shp_x, mindspore.float32))
         y_onehot[:,0,:] = (gt[:,0,:,:,:]==0)
         y_onehot[:,1,:] = (gt[:,0,:,:,:]==1)
         y_onehot[:,2,:] = (gt[:,0,:,:,:]==2)

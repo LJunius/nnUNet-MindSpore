@@ -366,6 +366,8 @@ class NetworkTrainer():
 
             self.all_tr_losses.append(np.mean(train_losses_epoch))
             self.print_to_log_file("train loss : %.4f" % self.all_tr_losses[-1])
+            # print("ok")
+            # exit(1)
             wandb.log({'epoch': self.epoch,
                        'train_loss': self.all_tr_losses[-1]}, step=self.epoch)
 

@@ -30,19 +30,19 @@ from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 
 import wandb
 
-os.environ['DEVICE_ID'] = '1'
+# os.environ['DEVICE_ID'] = '1'
 # os.environ['RANK_SIZE'] = '1'
 os.environ['DISTRIBUTE'] = '0'
 def do_train(parser):
-    wandb.init(project="Kit19", entity="dog-left")
-    """train logic according to parser args"""
+    wandb.init(project="HW-RESULT", entity="dog-left")
+    # """train logic according to parser args"""
     args = parser.parse_args()
     task = args.task
     fold = args.fold
 
     device_id = int(os.getenv('DEVICE_ID'))
     device_num = int(os.getenv('RANK_SIZE', '1'))
-    context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
+    context.set_context(mode=context.PYNATIVE_MODE, device_target="Ascend")
     run_distribute = int(os.getenv('DISTRIBUTE'))
     if run_distribute == 1:
         context.set_context(device_id=device_id)  # set device_id
@@ -105,7 +105,6 @@ def do_train(parser):
 
 
     config = {
-        "repo": "mindspore",
         "learning_rate": trainer.lr_scheduler_eps,
         "epochs": trainer.max_num_epochs,
         "batch_size": trainer.batch_size,

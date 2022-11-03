@@ -308,7 +308,7 @@ class DataLoader3D(SlimDataLoaderBase):
 
                 # this saves us a np.unique. Preprocessing already did that for all cases. Neat.
                 foreground_classes = np.array(
-                    [i for i in properties['class_locations'].keys() if properties['class_locations'][i].size != 0])
+                    [i for i in properties['class_locations'].keys() if len(properties['class_locations'][i]) != 0])
                 foreground_classes = foreground_classes[foreground_classes > 0]
 
                 if foreground_classes.size == 0:
