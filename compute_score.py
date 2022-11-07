@@ -34,6 +34,9 @@ def compute_dice(parser):
     label_folder = args.label_folder
     all_files = subfiles(input_folder, suffix=".nii.gz", join=False, sort=True)
     all_score = 0
+    all_hec1 = 0
+    all_hec2 = 0
+    all_hec2_no_0 = []
     for file in all_files:
         file_path = os.path.join(input_folder, file)
         label_name = file.split(".")[0]
@@ -42,15 +45,24 @@ def compute_dice(parser):
         label = sitk.GetArrayFromImage(sitk.ReadImage(label_path))
         score, hec1, hec2 = Hec_dice(predict, label)
         all_score += score
+        all_hec1 += hec1
+        all_hec2 += hec2
+        if hec2 > 1e-6:
+            all_hec2_no_0.append(hec2)
         print(f"{label_name}, score:{score}, hec1:{hec1}, hec2:{hec2}")
-    return all_score/len(all_files)
+    if len(all_hec2_no_0) == 0:
+        all_hec2_no_0.append(0)
+    return all_score/len(all_files), all_hec1/len(all_files), all_hec2/len(all_files), sum(all_hec2_no_0)/len(all_hec2_no_0)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_folder", type=str, required=False, default="/home/chengshuang/seg_competetion/zzn/nnUNet-MindSpore/exp",
+    # parser.add_argument("--input_folder", type=str, required=False,default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_val_data/predict_ms_debug",
+    #                     help="the result folder of predicted fiile like xx.nii.gz")
+    parser.add_argument("--input_folder", type=str, required=False,
+                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_ms/nnUNet_trained_models/nnUNet/3d_fullres/Task040_KiTS/nnUNetTrainerV2__nnUNetPlansv2.1/fold_3/validation_raw_test",
                         help="the result folder of predicted fiile like xx.nii.gz")
-    parser.add_argument("--label_folder", type=str, required=False, default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/labelsTr",
+    parser.add_argument("--label_folder", type=str, required=False, default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/labelsTr",
                         help="the label folder")
 
-    ave_score = compute_dice(parser)
-    print(f'ave_score is {ave_score}')
+    ave_score, ave_hec1, ave_hec2, ave_hec2_no_0 = compute_dice(parser)
+    print(f'ave_score:{ave_score}, ave_hec1:{ave_hec1}, ave_hec2:{ave_hec2}, ave_hec2_no0:{ave_hec2_no_0}')

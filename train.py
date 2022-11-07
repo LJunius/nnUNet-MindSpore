@@ -103,7 +103,6 @@ def do_train(parser):
 
     trainer.initialize(not validation_only)
 
-
     config = {
         "learning_rate": trainer.lr_scheduler_eps,
         "epochs": trainer.max_num_epochs,
@@ -131,8 +130,16 @@ def do_train(parser):
             if valbest:
                 trainer.load_best_checkpoint(train=False)
             else:
-                trainer.load_final_checkpoint(train=False)
+                # trainer.load_final_checkpoint(train=False)
+                filename = os.path.join(args.model_folder_name, f'fold_{args.fold}', "model_final_checkpoint.ckpt")
+                if not os.path.isfile(filename):
+                    raise RuntimeError(
+                        "Final checkpoint not found. Expected: %s. Please finish the training first." % filename)
+                trainer.load_checkpoint(filename, train=False)
 
+    trainer.validate(save_softmax=args.npz, validation_folder_name=args.val_folder,
+                     run_postprocessing_on_folds=not args.disable_postprocessing_on_folds,
+                     overwrite=args.val_disable_overwrite, do_infer=True, predict_output_folder=args.predict_output_folder)
 
 def main():
     """train logic"""
@@ -140,11 +147,16 @@ def main():
     parser.add_argument("-network", default="3d_fullres", required=False)
     parser.add_argument("-network_trainer", default="nnUNetTrainerV2", required=False)
     parser.add_argument("-task", default="Task040_KiTS", help="can be task name or task id", required=False)
-    parser.add_argument("-fold", default=1, help='0, 1, ..., 5 or \'all\'', required=False)
-    parser.add_argument("-val", "--validation_only", help="use this if you want to only run the validation",
+    parser.add_argument("-fold", default=3, help='0, 1, ..., 5 or \'all\'', required=False)
+    parser.add_argument("-val", "--validation_only", default=True, help="use this if you want to only run the validation",
                         action="store_true")
     parser.add_argument("-c", "--continue_training", help="use this if you want to continue a training",
                         action="store_true")
+    parser.add_argument("--predict_output_folder", help="run second predict, the output dir",
+                        default=None, required=False)
+    parser.add_argument("--model_folder_name", type=str, required=False,
+                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_ms/nnUNet_trained_models/nnUNet/3d_fullres/Task040_KiTS/nnUNetTrainerV2__nnUNetPlansv2.1",
+                        help="precise model name")
     parser.add_argument("-p", help="plans identifier. Only change this if you created a custom experiment planner",
                         default=default_plans_identifier, required=False)
     parser.add_argument("--use_compressed_data", default=False, action="store_true",
@@ -171,7 +183,7 @@ def main():
                         help="hands off. This is not intended to be used")
     parser.add_argument("--fp32", required=False, default=False, action="store_true",
                         help="disable mixed precision training and run old school fp32")
-    parser.add_argument("--val_folder", required=False, default="validation_raw",
+    parser.add_argument("--val_folder", required=False, default="validation_raw_test2",
                         help="name of the validation folder. No need to use this for most people")
     parser.add_argument("--disable_saving", required=False, action='store_true',
                         help="If set nnU-Net will not save any parameter files (except a temporary checkpoint that "
@@ -194,6 +206,7 @@ def main():
                              'file, for example model_final_checkpoint.model).'
                              'Will only be used when actually training. '
                              'Optional. Beta. Use with caution.')
+
 
     do_train(parser)
 

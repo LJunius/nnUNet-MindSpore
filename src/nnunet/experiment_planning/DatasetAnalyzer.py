@@ -205,6 +205,7 @@ class DatasetAnalyzer():
                 w = []
                 for iv in v:
                     w += iv
+                # w = np.array(w)
 
                 median, mean, sd, mn, mx, percentile_99_5, percentile_00_5 = self._compute_stats(w)
 
