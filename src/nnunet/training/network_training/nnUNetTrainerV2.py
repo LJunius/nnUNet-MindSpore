@@ -243,7 +243,8 @@ class nnUNetTrainerV2(nnUNetTrainer):
     def validate(self, do_mirroring: bool = True, use_sliding_window: bool = True,
                  step_size: float = 0.5, save_softmax: bool = True, use_gaussian: bool = True, overwrite: bool = True,
                  validation_folder_name: str = 'validation_raw', debug: bool = False, all_in_gpu: bool = False,
-                 segmentation_export_kwargs: dict = None, run_postprocessing_on_folds: bool = True):
+                 segmentation_export_kwargs: dict = None, run_postprocessing_on_folds: bool = True, do_infer: bool = False,
+                 predict_output_folder: str = None):
         """validate"""
         ds = self.network.do_ds
         self.network.do_ds = False
@@ -251,7 +252,8 @@ class nnUNetTrainerV2(nnUNetTrainer):
                                save_softmax=save_softmax, use_gaussian=use_gaussian,
                                overwrite=overwrite, validation_folder_name=validation_folder_name, debug=debug,
                                all_in_gpu=all_in_gpu, segmentation_export_kwargs=segmentation_export_kwargs,
-                               run_postprocessing_on_folds=run_postprocessing_on_folds)
+                               run_postprocessing_on_folds=run_postprocessing_on_folds, do_infer=do_infer,
+                               predict_output_folder=predict_output_folder)
 
         self.network.do_ds = ds
         return ret
@@ -263,7 +265,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                                                          pad_kwargs: dict = None, all_in_gpu: bool = False,
                                                          verbose: bool = True, mixed_precision=True, file_name=None,
                                                          img_path: str = None,
-                                                         covert_Ascend310_file: bool = True
+                                                         covert_Ascend310_file: bool = False
                                                          ) -> Tuple[np.ndarray, np.ndarray]:
         """predict preprocess data return seg and softmax"""
         ds = self.network.do_ds

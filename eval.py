@@ -17,8 +17,8 @@
 
 import argparse
 import os
-
-from batchgenerators.utilities.file_and_folder_operations import join, isdir
+from time import time
+from batchgenerators.utilities.file_and_folder_operations import join, isdir, save_json
 
 from mindspore import context
 from mindspore.communication import init
@@ -28,7 +28,7 @@ from src.nnunet.inference.predict import predict_from_folder
 from src.nnunet.paths import default_plans_identifier, network_training_output_dir, default_cascade_trainer, \
     default_trainer
 from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
-os.environ['DEVICE_ID'] = '2'
+os.environ['DEVICE_ID'] = '1'
 # os.environ['RANK_SIZE'] = '1'
 os.environ['DISTRIBUTE'] = '0'
 def do_eval(parser):
@@ -105,9 +105,12 @@ def do_eval(parser):
         trainer = trainer_class_name
     model_folder_name = join(network_training_output_dir, model, task_name, trainer + "__" +
                              args.plans_identifier)
+    if args.model_folder_name is not None:
+        model_folder_name = args.model_folder_name
     print("using model stored in ", model_folder_name)
     assert isdir(model_folder_name), "model output folder not found. Expected: %s" % model_folder_name
     print("args.chk", args.chk)
+    st = time()
     predict_from_folder(model_folder_name, input_folder, output_folder, folds, save_npz, num_threads_preprocessing,
                         num_threads_nifti_save, lowres_segmentations, part_id, num_parts, not disable_tta,
                         overwrite_existing=overwrite_existing, mode=mode, overwrite_all_in_gpu=all_in_gpu,
@@ -115,14 +118,16 @@ def do_eval(parser):
                         step_size=step_size, checkpoint_name=args.chk,
                         img_path=args.img_path,
                         covert_Ascend310_file=args.covert_Ascend310_file)
+    end = time()
+    save_json(end - st, join(output_folder, 'prediction_time.txt'))
 
 def main():
     """eval logic"""
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_folder',
-                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/imagesTr",
+                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_test/test_dataset",
                         help="Must contain all modalities for each patient in the correct", required=False)
-    parser.add_argument('-o', "--output_folder", default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/predict",
+    parser.add_argument('-o', "--output_folder", default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_val_data/predict_ms_debug2",
                         required=False, help="folder for saving predictions")
     parser.add_argument('-t', '--task_name', help='task name or task ID, required.',
                         default="Task040_KiTS", required=False)
@@ -138,7 +143,7 @@ def main():
                         default="3d_fullres", required=False)
     parser.add_argument('-p', '--plans_identifier', help='do not touch this unless you know what you are doing',
                         default=default_plans_identifier, required=False)
-    parser.add_argument('-f', '--folds', nargs='+', default='4',
+    parser.add_argument('-f', '--folds', nargs='+', default='3',
                         help="folds to use for prediction. ")
     parser.add_argument('-z', '--save_npz', required=False, action='store_true',
                         help="use this if you want to ensemble these predictions with those of other models. Softmax")
@@ -158,17 +163,20 @@ def main():
     parser.add_argument("--all_in_gpu", type=bool, default=False, required=False)
     parser.add_argument("--step_size", type=float, default=0.5, required=False, help="don't touch")
     parser.add_argument('-chk',
-                        help='checkpoint name, default: model_best',
+                        help='checkpoint name, default: model_best, other: model_final_checkpoint',
                         required=False,
-                        default='model_best')
-    parser.add_argument('--disable_mixed_precision', default=False, action='store_true', required=False)
+                        default='model_final_checkpoint')
+    parser.add_argument('--disable_mixed_precision', default=True, action='store_true', required=False)
     parser.add_argument("--img_path", type=str, required=False,
                         default="./src/nnunet/preprocess_Result",
                         help="310 bin file_out_put")
     parser.add_argument("--covert_Ascend310_file", type=bool, required=False,
                         default=False,
                         help="whether covert 310_file")
-
+    parser.add_argument("--model_folder_name", type=str, required=False,
+                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_ms/nnUNet_trained_models/nnUNet/3d_fullres/Task040_KiTS/nnUNetTrainerV2__nnUNetPlansv2.1",
+                        help="precise model name")
+    st = time()
     do_eval(parser)
 
 

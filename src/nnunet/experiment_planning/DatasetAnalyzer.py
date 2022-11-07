@@ -180,7 +180,7 @@ class DatasetAnalyzer():
     @staticmethod
     def _compute_stats(voxels):
         """compute voxel states"""
-        if voxels.size == 0:
+        if len(voxels) == 0:
             return np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
         median = np.median(voxels)
         mean = np.mean(voxels)
@@ -205,6 +205,7 @@ class DatasetAnalyzer():
                 w = []
                 for iv in v:
                     w += iv
+                # w = np.array(w)
 
                 median, mean, sd, mn, mx, percentile_99_5, percentile_00_5 = self._compute_stats(w)
 
