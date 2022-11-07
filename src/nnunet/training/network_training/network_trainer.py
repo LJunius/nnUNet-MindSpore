@@ -302,7 +302,9 @@ class NetworkTrainer():
             key = k
             new_state_dict[key] = value
 
-        load_param_into_net(self.network, new_state_dict)
+        param_not_load = load_param_into_net(self.network, new_state_dict)
+        # param_not_load = load_param_into_net(self.network, checkpoint)
+        print("param not load: ", param_not_load)
         if train:
             optimizer_state_dict = checkpoint['optimizer_state_dict']
             if optimizer_state_dict is not None:

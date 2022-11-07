@@ -465,6 +465,7 @@ class nnUNetTrainer(NetworkTrainer):
 
         current_mode = self.network.training
         self.network.set_train(current_mode)
+        self.network.do_ds = False
         ret = self.network.predict_3D(data, do_mirroring=do_mirroring, mirror_axes=mirror_axes,
                                       use_sliding_window=use_sliding_window, step_size=step_size,
                                       patch_size=self.patch_size, regions_class_order=self.regions_class_order,
@@ -482,7 +483,8 @@ class nnUNetTrainer(NetworkTrainer):
     def validate(self, do_mirroring: bool = True, use_sliding_window: bool = True, step_size: float = 0.5,
                  save_softmax: bool = True, use_gaussian: bool = True, overwrite: bool = True,
                  validation_folder_name: str = 'validation_raw', debug: bool = False, all_in_gpu: bool = False,
-                 segmentation_export_kwargs: dict = None, run_postprocessing_on_folds: bool = True):
+                 segmentation_export_kwargs: dict = None, run_postprocessing_on_folds: bool = True,
+                 do_infer: bool = False, predict_output_folder: str = None):
         """
         if debug=True then the temporary files generated for postprocessing determination will be kept
         """
@@ -493,7 +495,8 @@ class nnUNetTrainer(NetworkTrainer):
         assert self.was_initialized, "must initialize, ideally with checkpoint (or train first)"
         if self.dataset_val is None:
             self.load_dataset()
-            self.do_split()
+            if do_infer is False:
+                self.do_split()
 
         if segmentation_export_kwargs is None:
             if 'segmentation_export_params' in self.plans.keys():
@@ -511,6 +514,8 @@ class nnUNetTrainer(NetworkTrainer):
 
         # predictions as they come from the network go here
         output_folder = join(self.output_folder, validation_folder_name)
+        if predict_output_folder is not None:
+            output_folder = predict_output_folder
         maybe_mkdir_p(output_folder)
         # this is for debug purposes
         my_input_args = {'do_mirroring': do_mirroring,
@@ -537,7 +542,8 @@ class nnUNetTrainer(NetworkTrainer):
 
         export_pool = Pool(default_num_threads)
         results = []
-
+        if do_infer is True:
+            self.dataset_val = self.dataset
         for k in self.dataset_val.keys():
             properties = load_pickle(self.dataset[k]['properties_file'])
             fname = properties['list_of_data_files'][0].split("/")[-1][:-12]

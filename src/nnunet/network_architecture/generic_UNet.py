@@ -528,9 +528,8 @@ class Generic_UNet(SegmentationNetwork):
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
 
-        if not self._deep_supervision and not self.do_ds:
+        else:
             return seg_outputs[-1]
-        return None
 
     @staticmethod
     def compute_approx_vram_consumption(patch_size, num_pool_per_axis, base_num_features, max_num_features,
