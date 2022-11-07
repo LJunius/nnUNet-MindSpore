@@ -33,7 +33,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--task_ids", nargs="+", help="List of integers belonging to the task ids you wish to run"
+    parser.add_argument("-t", "--task_ids",default=[40,], nargs="+", help="List of integers belonging to the task ids you wish to run"
                                                             " experiment planning and preprocessing for. Each of these "
                                                             "ids must, have a matching folder 'TaskXXX_' in the raw "
                                                             "data folder")
@@ -81,7 +81,9 @@ def main():
                              "IDENTIFIER, the correct training command would be:\n"
                              "'nnUNet_train CONFIG TRAINER TASKID FOLD -p nnUNetPlans_pretrained_IDENTIFIER "
                              "-pretrained_weights FILENAME'")
-
+    parser.add_argument('--preprocessing_predict_dir', type=str, required=False, default=None)
+    parser.add_argument('--cropped_predict_dir', type=str, required=False, default=None)
+    parser.add_argument('--raw_predict_dir', type=str, required=False, default=None)
     args = parser.parse_args()
     task_ids = args.task_ids
     dont_run_preprocessing = args.no_pp
@@ -101,6 +103,8 @@ def main():
                   "skip 2d planning and preprocessing.")
         assert planner_name3d == 'ExperimentPlanner3D_v21_Pretrained', "When using --overwrite_plans you need to use " \
                                                                        "'-pl3d ExperimentPlanner3D_v21_Pretrained'"
+    if args.raw_predict_dir is not None:
+        nnUNet_raw_data = args.raw_predict_dir
 
     # we need raw data
     tasks = []
@@ -145,6 +149,10 @@ def task_loop_logic(args, dont_run_preprocessing, planner_2d, planner_3d, tasks,
         print("\n\n\n", t)
         cropped_out_dir = os.path.join(nnUNet_cropped_data, t)
         preprocessing_output_dir_this_task = os.path.join(preprocessing_output_dir, t)
+        if args.cropped_predict_dir is not None:
+            cropped_out_dir = os.path.join(nnUNet_cropped_data, t)
+        if args.preprocessing_predict_dir is not None:
+            preprocessing_output_dir_this_task = os.path.join(args.output_dir, t)
         # splitted_4d_output_dir_task = os.path.join(nnUNet_raw_data, t)
         # lists, modalities = create_lists_from_splitted_dataset(splitted_4d_output_dir_task)
 

@@ -570,7 +570,7 @@ class SegmentationNetwork(nn.Cell):
         result_torch = mindspore.ops.Zeros()(tuple([1, self.num_classes] + list(x.shape[2:])), mindspore.float32)
         if mult is not None:
             mult = maybe_to_mindspore(mult)
-        do_mirroring = False
+        # do_mirroring = False
         if do_mirroring:
             mirror_idx = 8
             num_results = 2 ** len(mirror_axes)
@@ -584,7 +584,6 @@ class SegmentationNetwork(nn.Cell):
         # x = mindspore.Tensor(input_tensor)
         for m in range(mirror_idx):
             if m == 0:
-                tmpx = self(x)
                 pred = self.inference_apply_nonlin(self(x))
                 result_torch += 1 / num_results * pred
 

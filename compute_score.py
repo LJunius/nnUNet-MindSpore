@@ -56,12 +56,12 @@ def compute_dice(parser):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_folder", type=str, required=False,default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/predict_ms_debug",
-                        help="the result folder of predicted fiile like xx.nii.gz")
-    # parser.add_argument("--input_folder", type=str, required=False,
-    #                     default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_trained_models/nnUNet/3d_fullres/Task040_KiTS/nnUNetTrainerV2__nnUNetPlansv2.1/fold_4/validation_raw/",
+    # parser.add_argument("--input_folder", type=str, required=False,default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_val_data/predict_ms_debug",
     #                     help="the result folder of predicted fiile like xx.nii.gz")
-    parser.add_argument("--label_folder", type=str, required=False, default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/labelsTr",
+    parser.add_argument("--input_folder", type=str, required=False,
+                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_ms/nnUNet_trained_models/nnUNet/3d_fullres/Task040_KiTS/nnUNetTrainerV2__nnUNetPlansv2.1/fold_3/validation_raw_test",
+                        help="the result folder of predicted fiile like xx.nii.gz")
+    parser.add_argument("--label_folder", type=str, required=False, default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/labelsTr",
                         help="the label folder")
 
     ave_score, ave_hec1, ave_hec2, ave_hec2_no_0 = compute_dice(parser)
