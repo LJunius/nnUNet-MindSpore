@@ -139,7 +139,7 @@ def do_train(parser):
 
     trainer.validate(save_softmax=args.npz, validation_folder_name=args.val_folder,
                      run_postprocessing_on_folds=not args.disable_postprocessing_on_folds,
-                     overwrite=args.val_disable_overwrite, do_infer=True, predict_output_folder=args.predict_output_folder)
+                     overwrite=args.val_disable_overwrite, do_infer=False, predict_output_folder=args.predict_output_folder)
 
 def main():
     """train logic"""
