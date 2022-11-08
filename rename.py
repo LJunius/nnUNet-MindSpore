@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser.add_argument("-i", '--input_folder', type=str,
                         default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_test/test_dataset",
                         help="Must contain all modalities for each patient in the correct", required=False)
-    parser.add_argument("--zero_to_nozero", default=False, type=bool,
+    parser.add_argument("--zero_to_nozero", default=True, type=bool,
                         help="if True, rename case_000**_0000.nii.gz to case_000**.nii.gz"
                              "else rename case_000**.nii.gz to case_000**_0000.nii.gz")
     args = parser.parse_args()
@@ -24,8 +24,8 @@ if __name__ == '__main__':
             nc = nc.split('_')[0] + '_' + nc.split('_')[1] + '.nii.gz'
             src = os.path.join(base, c)
             dst = os.path.join(base, nc)
-            # shutil.move(src, dst)
-            # print(src,"....",dst)
+            shutil.move(src, dst)
+            print(src,"....",dst)
     else:
         cases = subfiles(base, join=False, suffix="nii.gz")
         for c in cases:

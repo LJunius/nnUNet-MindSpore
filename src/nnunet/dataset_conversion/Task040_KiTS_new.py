@@ -11,9 +11,11 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
+import os
+import sys
+work_path = os.getcwd()
+sys.path.append(work_path)
 
-# import sys
-# sys.path.append("/home/chengshuang/seg_competetion/zzn/nnUNet")
 from copy import deepcopy
 import argparse
 from batchgenerators.utilities.file_and_folder_operations import *
@@ -211,7 +213,6 @@ if __name__ == "__main__":
     out = args.output_folder
     cases = subfiles(base, join=False, suffix=".nii.gz")
     print("start!")
-
     maybe_mkdir_p(out)
     maybe_mkdir_p(join(out, "imagesTr"))
     maybe_mkdir_p(join(out, "imagesTs"))
@@ -219,14 +220,14 @@ if __name__ == "__main__":
     for c in cases:
         c = c.split('.')[0]
         case_id = int(c.split("_")[-1])
-        predict = sitk.GetArrayFromImage(sitk.ReadImage(join(base, c + '.nii.gz')))
+        # predict = sitk.GetArrayFromImage(sitk.ReadImage(join(base, c + '.nii.gz')))
         # label = np.zeros_like(predict)
         # #
         # # # label = label[]
         # label = sitk.GetImageFromArray(label.astype(np.uint8))
         # sitk.WriteImage(label, join(out, "labelsTr", c + ".nii.gz"))
-        shutil.copy(join(base, c + '.nii.gz'), join(out, "imagesTr", c))
-        # shutil.copy(join(base, c + '.nii.gz'), join(out, "imagesTr", c + "_0000.nii.gz"))
+        # shutil.copy(join(base, c + '.nii.gz'), join(out, "imagesTr", c+".nii.gz"))
+        shutil.copy(join(base, c + '.nii.gz'), join(out, "imagesTr", c + "_0000.nii.gz"))
         # shutil.copy(join(base, c, "segmentation.nii.gz"), join(out, "labelsTr", c))
         print("caseid",case_id)
 

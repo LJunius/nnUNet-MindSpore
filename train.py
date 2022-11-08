@@ -30,7 +30,7 @@ from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 
 import wandb
 
-# os.environ['DEVICE_ID'] = '1'
+os.environ['DEVICE_ID'] = '0'
 # os.environ['RANK_SIZE'] = '1'
 os.environ['DISTRIBUTE'] = '0'
 def do_train(parser):
@@ -42,7 +42,7 @@ def do_train(parser):
 
     device_id = int(os.getenv('DEVICE_ID'))
     device_num = int(os.getenv('RANK_SIZE', '1'))
-    context.set_context(mode=context.PYNATIVE_MODE, device_target="Ascend")
+    context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
     run_distribute = int(os.getenv('DISTRIBUTE'))
     if run_distribute == 1:
         context.set_context(device_id=device_id)  # set device_id
@@ -81,7 +81,7 @@ def do_train(parser):
         fold = int(fold)
 
     plans_file, output_folder_name, dataset_directory, batch_dice, stage, \
-    trainer_class = get_default_configuration(network, task, network_trainer, plans_identifier)
+    trainer_class = get_default_configuration(network, task, network_trainer, plans_identifier, preprocessing_predict_dir=args.preprocessing_predict_dir)
 
     if trainer_class is None:
         raise RuntimeError("Could not find trainer class in nnunet.training.network_training")
@@ -206,8 +206,7 @@ def main():
                              'file, for example model_final_checkpoint.model).'
                              'Will only be used when actually training. '
                              'Optional. Beta. Use with caution.')
-
-
+    parser.add_argument('--preprocessing_predict_dir', type=str, required=False, default=None)
     do_train(parser)
 
 if __name__ == "__main__":

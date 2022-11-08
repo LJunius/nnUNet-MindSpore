@@ -36,13 +36,14 @@ def get_configuration_from_output_folder(folder):
 
 def get_default_configuration(network, task, network_trainer, plans_identifier=default_plans_identifier,
                               search_in=(src.nnunet.__path__[0], "training", "network_training"),
-                              base_module='src.nnunet.training.network_training'):
+                              base_module='src.nnunet.training.network_training', preprocessing_predict_dir=None):
     """get default configuration"""
     assert network in ['2d', '3d_lowres', '3d_fullres', '3d_cascade_fullres'], \
         "network can only be one of the following: \'3d_lowres\', \'3d_fullres\', \'3d_cascade_fullres\'"
 
     dataset_directory = join(preprocessing_output_dir, task)
-
+    if preprocessing_predict_dir is not None:
+        dataset_directory = join(preprocessing_predict_dir, task)
     if network == '2d':
         plans_file = join(preprocessing_output_dir, task, plans_identifier + "_plans_2D.pkl")
     else:
