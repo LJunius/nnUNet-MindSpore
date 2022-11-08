@@ -14,7 +14,10 @@
 # ============================================================================
 
 """nnunet preprocess"""
-
+import os
+import sys
+work_path = os.getcwd()
+sys.path.append(work_path)
 import shutil
 
 from batchgenerators.utilities.file_and_folder_operations import load_json
@@ -103,8 +106,7 @@ def main():
                   "skip 2d planning and preprocessing.")
         assert planner_name3d == 'ExperimentPlanner3D_v21_Pretrained', "When using --overwrite_plans you need to use " \
                                                                        "'-pl3d ExperimentPlanner3D_v21_Pretrained'"
-    if args.raw_predict_dir is not None:
-        nnUNet_raw_data = args.raw_predict_dir
+
 
     # we need raw data
     tasks = []
@@ -112,11 +114,13 @@ def main():
         i = int(i)
 
         task_name = convert_id_to_task_name(i)
-
+        if args.raw_predict_dir is not None:
+            nnUNet_raw_data = args.raw_predict_dir
         if args.verify_dataset_integrity:
             verify_dataset_integrity(join(nnUNet_raw_data, task_name))
-
-        crop(task_name, False, tf)
+        if args.cropped_predict_dir is not None:
+            nnUNet_cropped_data = args.cropped_predict_dir
+        crop(task_name, False, tf, nnUNet_cropped_data)
 
         tasks.append(task_name)
 
@@ -147,12 +151,13 @@ def task_loop_logic(args, dont_run_preprocessing, planner_2d, planner_3d, tasks,
     """plan and preprocess task loop"""
     for t in tasks:
         print("\n\n\n", t)
+        if args.cropped_predict_dir is not None:
+            nnUNet_cropped_data = args.cropped_predict_dir
+        if args.preprocessing_predict_dir is not None:
+            preprocessing_output_dir = args.preprocessing_predict_dir
         cropped_out_dir = os.path.join(nnUNet_cropped_data, t)
         preprocessing_output_dir_this_task = os.path.join(preprocessing_output_dir, t)
-        if args.cropped_predict_dir is not None:
-            cropped_out_dir = os.path.join(nnUNet_cropped_data, t)
-        if args.preprocessing_predict_dir is not None:
-            preprocessing_output_dir_this_task = os.path.join(args.output_dir, t)
+
         # splitted_4d_output_dir_task = os.path.join(nnUNet_raw_data, t)
         # lists, modalities = create_lists_from_splitted_dataset(splitted_4d_output_dir_task)
 
@@ -167,6 +172,8 @@ def task_loop_logic(args, dont_run_preprocessing, planner_2d, planner_3d, tasks,
 
         maybe_mkdir_p(preprocessing_output_dir_this_task)
         shutil.copy(join(cropped_out_dir, "dataset_properties.pkl"), preprocessing_output_dir_this_task)
+        if args.raw_predict_dir is not None:
+            nnUNet_raw_data = args.raw_predict_dir
         shutil.copy(join(nnUNet_raw_data, t, "dataset.json"), preprocessing_output_dir_this_task)
 
         threads = (tl, tf)

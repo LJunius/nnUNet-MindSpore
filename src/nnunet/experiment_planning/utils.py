@@ -124,7 +124,7 @@ def get_caseIDs_from_splitted_dataset_folder(folder):
     return files
 
 
-def crop(task_string, override=False, num_threads=default_num_threads):
+def crop(task_string, override=False, num_threads=default_num_threads, nnUNet_cropped_data=None):
     """crop function"""
     cropped_out_dir = join(nnUNet_cropped_data, task_string)
     maybe_mkdir_p(cropped_out_dir)
