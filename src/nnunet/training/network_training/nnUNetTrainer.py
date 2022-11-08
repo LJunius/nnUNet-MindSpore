@@ -542,8 +542,8 @@ class nnUNetTrainer(NetworkTrainer):
 
         export_pool = Pool(default_num_threads)
         results = []
-        if do_infer is True:
-            self.dataset_val = self.dataset
+        # if do_infer is True:
+        #     self.dataset_val = self.dataset
         for k in self.dataset_val.keys():
             properties = load_pickle(self.dataset[k]['properties_file'])
             fname = properties['list_of_data_files'][0].split("/")[-1][:-12]
