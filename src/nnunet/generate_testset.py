@@ -30,19 +30,32 @@ def do_generate_testset(par):
     args = par.parse_args()
     split_file = np.load(args.splits_final, allow_pickle=True)
     val_list = split_file[args.fold]["val"]
-    output_dir = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset_test/test_dataset"
-    raw_data_path = "/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/imagesTr"
-    for case in val_list:
-        src = join(raw_data_path, case + '_0000.nii.gz')
-        dst = join(output_dir, case+'.nii.gz')
-        print(src, "...", dst)
-        shutil.copy(src, dst)
-    print("")
+
+    raw_data_path = os.path.join("src/nnUNetFrame/DATASET/nnUNet_raw/nnUNet_raw_data",
+                                 (os.path.basename(os.path.dirname(args.splits_final))), "imagesTr")
+    labelsTr_path = os.path.join("src/nnUNetFrame/DATASET/nnUNet_raw/nnUNet_raw_data",
+                                 (os.path.basename(os.path.dirname(args.splits_final))), "labelsTr")
+    imagesVal_path = os.path.join("src/nnUNetFrame/DATASET/nnUNet_raw/nnUNet_raw_data",
+                                  (os.path.basename(os.path.dirname(args.splits_final))), "imagesVal")
+    labelsTs_path = os.path.join("src/nnUNetFrame/DATASET/nnUNet_raw/nnUNet_raw_data",
+                                 (os.path.basename(os.path.dirname(args.splits_final))), "labelsVal")
+
+    if not os.path.exists(imagesVal_path):
+        os.makedirs(imagesVal_path)
+    if not os.path.exists(labelsTs_path):
+        os.makedirs(labelsTs_path)
+
+    for root, _, files in os.walk(raw_data_path):
+        for file in files:
+            if file.replace("_0000.nii.gz", "") in val_list:
+                shutil.copy(os.path.join(root, file), imagesVal_path)
+                shutil.copy(os.path.join(labelsTr_path, file.replace("_0000", "")), labelsTs_path)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--splits_final", type=str,
-                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_preprocessed/Task040_KiTS/splits_final.pkl",
+                        default="src/nnUNetFrame/DATASET/nnUNet_preprocessed/Task004_Hippocampus/splits_final.pkl",
                         required=False, help="split file path")
-    parser.add_argument("--fold", type=int, default=3, required=False, help="which fold for validate")
+    parser.add_argument("--fold", type=int, default=0, required=False, help="which fold for validate")
     do_generate_testset(par=parser)

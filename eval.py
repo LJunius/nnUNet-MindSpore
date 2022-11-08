@@ -28,7 +28,7 @@ from src.nnunet.inference.predict import predict_from_folder
 from src.nnunet.paths import default_plans_identifier, network_training_output_dir, default_cascade_trainer, \
     default_trainer
 from src.nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
-os.environ['DEVICE_ID'] = '1'
+# os.environ['DEVICE_ID'] = '2'
 # os.environ['RANK_SIZE'] = '1'
 os.environ['DISTRIBUTE'] = '0'
 def do_eval(parser):
@@ -41,7 +41,7 @@ def do_eval(parser):
         context.set_context(mode=context.GRAPH_MODE, device_target="Ascend")
         context.set_context(device_id=device_id)  # set device_id
     else:
-        context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
+        context.set_context(mode=context.PYNATIVE_MODE, device_target="Ascend")
         context.set_context(device_id=device_id)  # set device_id
     args = parser.parse_args()
     input_folder = args.input_folder
@@ -125,9 +125,9 @@ def main():
     """eval logic"""
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_folder',
-                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_test/test_dataset",
+                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/imagesTr",
                         help="Must contain all modalities for each patient in the correct", required=False)
-    parser.add_argument('-o', "--output_folder", default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_val_data/predict_ms_debug2",
+    parser.add_argument('-o', "--output_folder", default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset/nnUNet_raw/nnUNet_val_data/predict",
                         required=False, help="folder for saving predictions")
     parser.add_argument('-t', '--task_name', help='task name or task ID, required.',
                         default="Task040_KiTS", required=False)
@@ -143,7 +143,7 @@ def main():
                         default="3d_fullres", required=False)
     parser.add_argument('-p', '--plans_identifier', help='do not touch this unless you know what you are doing',
                         default=default_plans_identifier, required=False)
-    parser.add_argument('-f', '--folds', nargs='+', default='3',
+    parser.add_argument('-f', '--folds', nargs='+', default='1',
                         help="folds to use for prediction. ")
     parser.add_argument('-z', '--save_npz', required=False, action='store_true',
                         help="use this if you want to ensemble these predictions with those of other models. Softmax")
@@ -165,8 +165,8 @@ def main():
     parser.add_argument('-chk',
                         help='checkpoint name, default: model_best, other: model_final_checkpoint',
                         required=False,
-                        default='model_final_checkpoint')
-    parser.add_argument('--disable_mixed_precision', default=True, action='store_true', required=False)
+                        default='model_latest')
+    parser.add_argument('--disable_mixed_precision', default=False, action='store_true', required=False)
     parser.add_argument("--img_path", type=str, required=False,
                         default="./src/nnunet/preprocess_Result",
                         help="310 bin file_out_put")
@@ -174,7 +174,7 @@ def main():
                         default=False,
                         help="whether covert 310_file")
     parser.add_argument("--model_folder_name", type=str, required=False,
-                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_ms/nnUNet_trained_models/nnUNet/3d_fullres/Task040_KiTS/nnUNetTrainerV2__nnUNetPlansv2.1",
+                        default="/home/ma-user/work/data/nnunet_dataset/nnUNet_trained_models/nnUNet/3d_fullres/Task040_KiTS/nnUNetTrainerV2__nnUNetPlansv2.1",
                         help="precise model name")
     st = time()
     do_eval(parser)

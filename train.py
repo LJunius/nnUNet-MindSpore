@@ -147,8 +147,8 @@ def main():
     parser.add_argument("-network", default="3d_fullres", required=False)
     parser.add_argument("-network_trainer", default="nnUNetTrainerV2", required=False)
     parser.add_argument("-task", default="Task040_KiTS", help="can be task name or task id", required=False)
-    parser.add_argument("-fold", default=3, help='0, 1, ..., 5 or \'all\'', required=False)
-    parser.add_argument("-val", "--validation_only", default=True, help="use this if you want to only run the validation",
+    parser.add_argument("-fold", default=1, help='0, 1, ..., 5 or \'all\'', required=False)
+    parser.add_argument("-val", "--validation_only", help="use this if you want to only run the validation",
                         action="store_true")
     parser.add_argument("-c", "--continue_training", help="use this if you want to continue a training",
                         action="store_true")

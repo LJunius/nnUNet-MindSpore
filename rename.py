@@ -6,7 +6,7 @@ import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", '--input_folder', type=str,
-                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_test/test_dataset",
+                        default="/home/ma-user/work/data/nnunet_dataset/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/test_predict",
                         help="Must contain all modalities for each patient in the correct", required=False)
     parser.add_argument("--zero_to_nozero", default=False, type=bool,
                         help="if True, rename case_000**_0000.nii.gz to case_000**.nii.gz"

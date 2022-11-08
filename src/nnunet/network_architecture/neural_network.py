@@ -343,12 +343,15 @@ class SegmentationNetwork(nn.Cell):
 
                 self._gaussian_3d = gaussian_importance_map
                 self._patch_size_for_gaussian_3d = patch_size
-                if verbose: print("done")
             else:
                 if verbose: print("using precomputed Gaussian")
                 gaussian_importance_map = self._gaussian_3d
 
             gaussian_importance_map = mindspore.Tensor(gaussian_importance_map)
+
+            # predict on cpu if cuda not available
+
+            gaussian_importance_map = gaussian_importance_map
 
         else:
             gaussian_importance_map = None
@@ -371,11 +374,11 @@ class SegmentationNetwork(nn.Cell):
                 ones = mindspore.ops.Ones()
                 add_for_nb_of_preds = ones(patch_size, mindspore.float32)
 
-            if verbose: print("initializing result array (on Device)")
+            if verbose: print("initializing result array (on GPU)")
             zeros = mindspore.ops.Zeros()
             aggregated_results = zeros(tuple([self.num_classes, ] + list(data.shape[1:])), mindspore.float32)
 
-            if verbose: print("moving data to device")
+            if verbose: print("moving data to GPU")
             data = mindspore.Tensor.from_numpy(data)
 
             if verbose: print("initializing result_numsamples (on GPU)")
@@ -423,7 +426,7 @@ class SegmentationNetwork(nn.Cell):
                         predicted_patch = predicted_patch
                     else:
                         predicted_patch = predicted_patch.asnumpy()
-                    # print("predicted_patch", predicted_patch.shape)
+                    print("predicted_patch", predicted_patch.shape)
                     aggregated_results[:, lb_x:ub_x, lb_y:ub_y, lb_z:ub_z] += predicted_patch
 
                     aggregated_nb_of_predictions[:, lb_x:ub_x, lb_y:ub_y, lb_z:ub_z] += add_for_nb_of_preds
@@ -570,7 +573,8 @@ class SegmentationNetwork(nn.Cell):
         result_torch = mindspore.ops.Zeros()(tuple([1, self.num_classes] + list(x.shape[2:])), mindspore.float32)
         if mult is not None:
             mult = maybe_to_mindspore(mult)
-        # do_mirroring = False
+
+        do_mirroring = False
         if do_mirroring:
             mirror_idx = 8
             num_results = 2 ** len(mirror_axes)
@@ -584,35 +588,43 @@ class SegmentationNetwork(nn.Cell):
         # x = mindspore.Tensor(input_tensor)
         for m in range(mirror_idx):
             if m == 0:
-                pred = self.inference_apply_nonlin(self(x))
+                pred = self.inference_apply_nonlin(self(x)[0])[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * pred
 
             if m == 1 and (2 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4,))(x)))
+                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4,))(x)))[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * mindspore.ops.ReverseV2((4,))(pred)
 
             if m == 2 and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((3,))(x)))
+                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((3,))(x)))[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * mindspore.ops.ReverseV2((3,))(pred)
 
             if m == 3 and (2 in mirror_axes) and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4, 3))(x)))
+                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4, 3))(x)))[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * mindspore.ops.ReverseV2((4, 3))(pred)
 
             if m == 4 and (0 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((2,))(x)))
+                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((2,))(x)))[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * mindspore.ops.ReverseV2((2,))(pred)
 
             if m == 5 and (0 in mirror_axes) and (2 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4, 2))(x)))
+                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4, 2))(x)))[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * mindspore.ops.ReverseV2((4, 2))(pred)
 
             if m == 6 and (0 in mirror_axes) and (1 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((3, 2))(x)))
+                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((3, 2))(x)))[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * mindspore.ops.ReverseV2((3, 2))(pred)
 
             if m == 7 and (0 in mirror_axes) and (1 in mirror_axes) and (2 in mirror_axes):
-                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4, 3, 2))(x)))
+                pred = self.inference_apply_nonlin(self(mindspore.ops.ReverseV2((4, 3, 2))(x)))[0]
+                pred = self.expand_dims(pred, 0)
                 result_torch += 1 / num_results * mindspore.ops.ReverseV2((4, 3, 2))(pred)
 
         if mult is not None:
