@@ -37,7 +37,7 @@ from src.nnunet.training.loss_functions.deep_supervision import MultipleOutputLo
 from src.nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
 from src.nnunet.utilities.nd_softmax import softmax_helper
 from src.nnunet.utilities.to_mindspore import maybe_to_mindspore
-from train import wandb
+# from train import wandb
 
 loss_scale = 1024.
 loss_scale_manager = FixedLossScaleManager(loss_scale, False)
@@ -118,8 +118,8 @@ class nnUNetTrainerV2(nnUNetTrainer):
                          deterministic, fp16)
         self.was_initialized = False
         self.do_dummy_2D_aug = None
-        self.max_num_epochs = 500
-        self.initial_lr = 1e-3
+        self.max_num_epochs = 1000
+        self.initial_lr = 2e-3
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
         self.pin_memory = True
@@ -221,7 +221,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
         self.network.inference_apply_nonlin = softmax_helper
 
-    def poly_lr(self, epoch, exponent=0.9):
+    def poly_lr(self, epoch, exponent=1.9):
         """plot the learning rate"""
         return self.initial_lr * (1 - epoch / self.max_num_epochs) ** exponent
 
@@ -472,7 +472,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
             ep = epoch
 
         self.print_to_log_file("lr:", np.round(self.lr[ep], decimals=6))
-        wandb.log({'learning_rate': self.lr[ep]}, step=ep)
+        # wandb.log({'learning_rate': self.lr[ep]}, step=ep)
 
     def on_epoch_end(self):
         """

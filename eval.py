@@ -143,7 +143,7 @@ def main():
                         default="3d_fullres", required=False)
     parser.add_argument('-p', '--plans_identifier', help='do not touch this unless you know what you are doing',
                         default=default_plans_identifier, required=False)
-    parser.add_argument('-f', '--folds', nargs='+', default='1',
+    parser.add_argument('-f', '--folds', nargs='+', default='0',
                         help="folds to use for prediction. ")
     parser.add_argument('-z', '--save_npz', required=False, action='store_true',
                         help="use this if you want to ensemble these predictions with those of other models. Softmax")
@@ -165,7 +165,7 @@ def main():
     parser.add_argument('-chk',
                         help='checkpoint name, default: model_best, other: model_final_checkpoint',
                         required=False,
-                        default='model_latest')
+                        default='model_final_checkpoint')
     parser.add_argument('--disable_mixed_precision', default=True, action='store_true', required=False)
     parser.add_argument("--img_path", type=str, required=False,
                         default="./src/nnunet/preprocess_Result",

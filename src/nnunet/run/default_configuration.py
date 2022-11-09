@@ -41,13 +41,16 @@ def get_default_configuration(network, task, network_trainer, plans_identifier=d
     assert network in ['2d', '3d_lowres', '3d_fullres', '3d_cascade_fullres'], \
         "network can only be one of the following: \'3d_lowres\', \'3d_fullres\', \'3d_cascade_fullres\'"
 
-    dataset_directory = join(preprocessing_output_dir, task)
     if preprocessing_predict_dir is not None:
         dataset_directory = join(preprocessing_predict_dir, task)
-    if network == '2d':
-        plans_file = join(preprocessing_output_dir, task, plans_identifier + "_plans_2D.pkl")
+        tmp_preprocess = preprocessing_predict_dir
     else:
-        plans_file = join(preprocessing_output_dir, task, plans_identifier + "_plans_3D.pkl")
+        tmp_preprocess = preprocessing_output_dir
+        dataset_directory = join(preprocessing_output_dir, task)
+    if network == '2d':
+        plans_file = join(tmp_preprocess, task, plans_identifier + "_plans_2D.pkl")
+    else:
+        plans_file = join(tmp_preprocess, task, plans_identifier + "_plans_3D.pkl")
 
     plans = load_pickle(plans_file)
     possible_stages = list(plans['plans_per_stage'].keys())

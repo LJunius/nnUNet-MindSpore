@@ -36,7 +36,7 @@ from src.nnunet.network_architecture.neural_network import SegmentationNetwork
 from sklearn.model_selection import KFold
 
 from tqdm import trange
-import wandb
+# import wandb
 
 
 
@@ -370,8 +370,8 @@ class NetworkTrainer():
             self.print_to_log_file("train loss : %.4f" % self.all_tr_losses[-1])
             # print("ok")
             # exit(1)
-            wandb.log({'epoch': self.epoch,
-                       'train_loss': self.all_tr_losses[-1]}, step=self.epoch)
+            # wandb.log({'epoch': self.epoch,
+            #            'train_loss': self.all_tr_losses[-1]}, step=self.epoch)
 
 
             # validation with train=False
@@ -381,7 +381,7 @@ class NetworkTrainer():
                 val_losses.append(l)
             self.all_val_losses.append(np.mean(val_losses))
             self.print_to_log_file("validation loss: %.4f" % self.all_val_losses[-1])
-            wandb.log({'validate_loss': self.all_val_losses[-1]}, step=self.epoch)
+            # wandb.log({'validate_loss': self.all_val_losses[-1]}, step=self.epoch)
 
             # validate
             if self.also_val_in_tr_mode:
@@ -393,7 +393,7 @@ class NetworkTrainer():
                     val_losses.append(l)
                 self.all_val_losses_tr_mode.append(np.mean(val_losses))
                 self.print_to_log_file("validation loss (train=True): %.4f" % self.all_val_losses_tr_mode[-1])
-                wandb.log({'validate_loss_tr_mode': self.all_val_losses_tr_mode[-1]}, step=self.epoch)
+                # wandb.log({'validate_loss_tr_mode': self.all_val_losses_tr_mode[-1]}, step=self.epoch)
 
             self.update_train_loss_MA()  # needed for lr scheduler and stopping of training
 

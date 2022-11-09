@@ -371,11 +371,11 @@ class SegmentationNetwork(nn.Cell):
                 ones = mindspore.ops.Ones()
                 add_for_nb_of_preds = ones(patch_size, mindspore.float32)
 
-            if verbose: print("initializing result array (on Device)")
+            if verbose: print("initializing result array (on GPU)")
             zeros = mindspore.ops.Zeros()
             aggregated_results = zeros(tuple([self.num_classes, ] + list(data.shape[1:])), mindspore.float32)
 
-            if verbose: print("moving data to device")
+            if verbose: print("moving data to GPU")
             data = mindspore.Tensor.from_numpy(data)
 
             if verbose: print("initializing result_numsamples (on GPU)")
@@ -423,7 +423,7 @@ class SegmentationNetwork(nn.Cell):
                         predicted_patch = predicted_patch
                     else:
                         predicted_patch = predicted_patch.asnumpy()
-                    # print("predicted_patch", predicted_patch.shape)
+                    print("predicted_patch", predicted_patch.shape)
                     aggregated_results[:, lb_x:ub_x, lb_y:ub_y, lb_z:ub_z] += predicted_patch
 
                     aggregated_nb_of_predictions[:, lb_x:ub_x, lb_y:ub_y, lb_z:ub_z] += add_for_nb_of_preds
@@ -570,7 +570,7 @@ class SegmentationNetwork(nn.Cell):
         result_torch = mindspore.ops.Zeros()(tuple([1, self.num_classes] + list(x.shape[2:])), mindspore.float32)
         if mult is not None:
             mult = maybe_to_mindspore(mult)
-        # do_mirroring = False
+        do_mirroring = False
         if do_mirroring:
             mirror_idx = 8
             num_results = 2 ** len(mirror_axes)

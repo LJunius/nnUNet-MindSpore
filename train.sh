@@ -1,1 +1,0 @@
-python /home/ma-user/work/nnUNet-MindSpore/train.py
