@@ -120,7 +120,7 @@ def main():
             verify_dataset_integrity(join(nnUNet_raw_data, task_name))
         if args.cropped_predict_dir is not None:
             nnUNet_cropped_data = args.cropped_predict_dir
-        crop(task_name, False, tf, nnUNet_cropped_data)
+        crop(task_name, False, tf, nnUNet_cropped_data, nnUNet_raw_data)
 
         tasks.append(task_name)
 

@@ -24,5 +24,5 @@ mkdir -p preprocessing_predict_dir
 #python eval.py --input_folder $1 --output_folder $presudo_labels_dir --model_folder_name $first_predict_model --folds 3
 #python rename.py --input_folder $1
 #python src/nnunet/dataset_conversion/Task040_KiTS_new.py --input_folder $1 --output_folder $imagesTr_folder
-#python src/nnunet/experiment_planning/nnUNet_plan_and_preprocess.py --raw_predict_dir $raw_predict_dir --cropped_predict_dir $cropped_predict_dir --preprocessing_predict_dir $preprocessing_predict_dir
-python train.py --predict_output_folder $2 --model_folder_name $second_predict_model --disable_postprocessing_on_folds
+python src/nnunet/experiment_planning/nnUNet_plan_and_preprocess.py --raw_predict_dir $raw_predict_dir --cropped_predict_dir $cropped_predict_dir --preprocessing_predict_dir $preprocessing_predict_dir
+#python train.py --predict_output_folder $2 --model_folder_name $second_predict_model --disable_postprocessing_on_folds
