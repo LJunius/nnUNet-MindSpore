@@ -42,7 +42,7 @@ def do_train(parser):
 
     device_id = int(os.getenv('DEVICE_ID'))
     device_num = int(os.getenv('RANK_SIZE', '1'))
-    context.set_context(mode=context.PYNATIVE_MODE, device_target="GPU")
+    context.set_context(mode=context.PYNATIVE_MODE, device_target="Ascend")
     run_distribute = int(os.getenv('DISTRIBUTE'))
     if run_distribute == 1:
         context.set_context(device_id=device_id)  # set device_id

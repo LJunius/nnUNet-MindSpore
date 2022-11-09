@@ -59,9 +59,9 @@ if __name__ == '__main__':
     # parser.add_argument("--input_folder", type=str, required=False,default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_val_data/predict_ms_debug",
     #                     help="the result folder of predicted fiile like xx.nii.gz")
     parser.add_argument("--input_folder", type=str, required=False,
-                        default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_test/test_dataset/output_dir",
+                        default="/home/ma-user/work/data/nnunet_dataset/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/test_predict/nnUNet_raw_data/Task040_KiTS/labelsTr",
                         help="the result folder of predicted fiile like xx.nii.gz")
-    parser.add_argument("--label_folder", type=str, required=False, default="/home/ictpercomp/sdb1/chengs18/nnunet_dataset_torch/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/labelsTr",
+    parser.add_argument("--label_folder", type=str, required=False, default="/home/ma-user/work/data/nnunet_dataset/nnUNet_raw/nnUNet_raw_data/Task040_KiTS/labelsTr",
                         help="the label folder")
 
     ave_score, ave_hec1, ave_hec2, ave_hec2_no_0 = compute_dice(parser)
